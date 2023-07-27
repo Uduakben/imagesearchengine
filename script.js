@@ -1,25 +1,52 @@
 
-let speech  = new SpeechSynthesisUtterance();
+const accessKey = "j5m2-cDv4ADoDxElE5EGH55blSYXiybVJyZk2ePHhbA"
 
-document.querySelector("button").addEventListener("click", ()=>{
-    speech.text = document.querySelector("textarea").value;
-    window.speechSynthesis.speak(speech);
+const searchForm = document.getElementById("search-form");
+const searchInput = document.getElementById("search-input");
+const searchResult = document.getElementById("search-result")
+const showMoreBtn = document.getElementById("show-more-button");
+
+
+let keyword = "";
+let page = 1;
+
+
+async function searchImages(){
+    keyword = searchInput.value;
+    const url = `https://api.unsplash.com/search/photos?page=${page}&query=${keyword}&client_id=${accessKey}&per_page=12`
+
+    const response = await fetch(url)
+    const data = await response.json();
+
+
+    if(page === 1){
+        searchResult.innerHTML = "";
+    }
+    const results = data.results;
+
+    results.map((result) =>{
+        const image = document.createElement("img");
+        image.src = result.urls.small;
+        const imageLink = document.createElement("a");
+        imageLink.href = result.links.html;
+        imageLink.target = "_blank"
+
+        imageLink.appendChild(image)
+        searchResult.appendChild(imageLink)
+    })
+
+    showMoreBtn.style.display = "block";
+}
+
+searchForm.addEventListener("submit", (e) =>{
+    e.preventDefault();
+    page = 1;
+    searchImages()
+})
+
+showMoreBtn.addEventListener("click", () =>{
+    page++;
+    searchImages();
 })
 
 
-let voices = [];
-
-let voiceSelect = document.querySelector("select");
-
-
-window.speechSynthesis.onvoiceschanged = () =>{
-    voices = window.speechSynthesis.getVoices();
-    speech.voice = voices[0]
-
-   voices.forEach((voices, i)=>(voiceSelect.options[i]=
-    new Option(voices.name, i)))
-};
-
-voiceSelect.addEventListener("change", () => {
-    speech.voice = voices[voiceSelect.value];
-})
